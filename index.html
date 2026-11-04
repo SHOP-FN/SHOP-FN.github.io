@@ -135,7 +135,6 @@
   <main id="shop-grid" class="grid-container"></main>
 
   <script>
-    // 最新の仕様に対応したエンドポイント（日本語対応）
     const API_URL = 'https://fortnite-api.com/v2/shop?language=ja';
     const shopGrid = document.getElementById('shop-grid');
     const statusEl = document.getElementById('status');
@@ -174,22 +173,32 @@
       }
 
       entries.forEach(entry => {
-        const item = entry.items && entry.items[0] ? entry.items[0] : entry;
+        const item = entry.items && entry.items[0] ? entry.items[0] : null;
         
-        const name = item.name || entry.bundle?.name || '名称不明';
-        const type = item.type?.displayValue || 'アイテム';
+        // 通常アイテム、バンドル、ジャムトラックなどの多様なデータ構造から名前を取得
+        const name = entry.name || 
+                     entry.bundle?.name || 
+                     item?.name || 
+                     entry.tracks?.[0]?.title || 
+                     '名称不明';
+
+        const type = item?.type?.displayValue || 
+                     (entry.bundle ? 'バンドル' : 'アイテム');
+
         const price = entry.finalPrice || entry.regularPrice || 0;
         
-        const imageUrl = item.images?.icon || 
-                         item.images?.featured || 
+        // 画像の取得先を幅広くサポート
+        const imageUrl = item?.images?.icon || 
+                         item?.images?.featured || 
                          entry.bundle?.image || 
+                         entry.newDisplayAsset?.materialInstances?.[0]?.textures?.Background ||
                          'https://via.placeholder.com/250?text=No+Image';
 
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
           <div class="card-img-wrapper">
-            <img class="card-img" src="${imageUrl}" alt="${name}" loading="lazy">
+            <img class="card-img" src="${imageUrl}" alt="${escapeHtml(name)}" loading="lazy">
           </div>
           <div class="card-content">
             <div>
