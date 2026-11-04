@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FN Shop Viewer</title>
+  <title>Item Catalog</title>
   <style>
     :root {
       --bg-color: #0f172a;
@@ -128,14 +128,15 @@
 <body>
 
   <header>
-    <h1>FN Shop Viewer</h1>
+    <h1>Item Catalog</h1>
     <div id="status">読み込み中...</div>
   </header>
 
   <main id="shop-grid" class="grid-container"></main>
 
   <script>
-    const API_URL = 'https://fortnite-api.com/v2/shop/br?language=ja';
+    // 最新の仕様に対応したエンドポイント（日本語対応）
+    const API_URL = 'https://fortnite-api.com/v2/shop?language=ja';
     const shopGrid = document.getElementById('shop-grid');
     const statusEl = document.getElementById('status');
 
@@ -162,19 +163,8 @@
       statusEl.textContent = `最終更新: ${new Date(data.date).toLocaleString('ja-JP')}`;
       shopGrid.innerHTML = '';
 
-      const entries = data.featured?.entries || data.daily?.entries || [];
-
-      if (entries.length === 0 && data.entries) {
-        renderEntries(data.entries);
-      } else {
-        const allEntries = [
-          ...(data.featured?.entries || []),
-          ...(data.daily?.entries || []),
-          ...(data.votes?.entries || []),
-          ...(data.voteWinners?.entries || [])
-        ];
-        renderEntries(allEntries.length > 0 ? allEntries : data.entries || []);
-      }
+      const entries = data.entries || data.featured?.entries || data.daily?.entries || [];
+      renderEntries(entries);
     }
 
     function renderEntries(entries) {
